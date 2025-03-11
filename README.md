@@ -5,7 +5,7 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
   - Docker (para PSORTb).
 - **Requisitos del sistema:**
   - Memoria RAM suficiente (recomendado al menos 8 gb de RAM).
-  - Conexión a Internet (para descargar dependencias).
+  - Conexión a Internet (para descargar dependencias y conectar con PSORTb).
 
 ## Instalación
 1. Clonar el repositorio:
@@ -15,3 +15,6 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 2. Ejecutar el script de dependencias **dependencies.sh** 
    ```bash
    ./dependencies.sh
+## Uso
+```bash
+./main.sh --proteoma proteoma.fasta --output resultados --gram negative
