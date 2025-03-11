@@ -3,7 +3,6 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 ## Requisitos
 - **Dependencias:**
   - Docker (para PSORTb).
-  - 
 - **Requisitos del sistema:**
   - Memoria RAM suficiente (recomendado al menos 8 gb de RAM).
   - Conexión a Internet (para descargar dependencias).
@@ -12,5 +11,7 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 1. Clonar el repositorio:
    ```bash
    git clone https://github.com/0xLJoseb/Biosoft.git
-   cd Biosoft```
-2. Ejecutar el script de dependencias./install_dependencies.sh 
+   cd Biosoft
+2. Ejecutar el script de dependencias **dependencies.sh** 
+   ```bash
+   ./dependencies.sh
