@@ -35,7 +35,6 @@ OPCIONES:
 ## Resultados
 - psortb_results/: Predicciones de PSORTb.
 - deeploc_results/: Predicciones de DeepLoc.
-- extracelulares_consenso.csv: Resultados combinados de PSORTb y DeepLoc.
-- Extracellular_proteins.fasta: Secuencias FASTA de proteínas extracelulares.
-- resultsNLS.csv: Predicciones de NLS por NLStradamus.
+- Comb/: Directorio con un CSV con ambas predicciones.
+- NLSPredicts/: Directorio con un CSV con resultados de NLS.
 
