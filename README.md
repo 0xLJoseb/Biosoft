@@ -15,11 +15,11 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 2. Ejecutar el script de dependencias **dependencies.sh** 
    ```bash
    ./dependencies.sh
+   
 ## Uso
 ```bash
 BIOSOFT: Automatiza la predicción de localización subcelular y NLS usando PSORTb, Deeplocpro y NLStradamus.
 [*]Uso: ./main.sh [OPCIONES]
-
 
 OPCIONES:
   --gram GRAM        Grupo Gram del organismo (negative, positive, archaea). Por defecto: negative.
@@ -28,6 +28,13 @@ OPCIONES:
   --threads N        Número de hilos para NLStradamus. Por defecto: todos los núcleos disponibles.
   --help             Muestra este mensaje de ayuda.
 
-```bash
 #Ejemplo:
 ./main.sh --proteoma proteoma.fasta --output resultados --gram negative
+
+
+## Resultados
+- psortb_results/: Predicciones de PSORTb.
+- deeploc_results/: Predicciones de DeepLoc.
+- extracelulares_consenso.csv: Resultados combinados de PSORTb y DeepLoc.
+- Extracellular_proteins.fasta: Secuencias FASTA de proteínas extracelulares.
+- resultsNLS.csv: Predicciones de NLS por NLStradamus.
