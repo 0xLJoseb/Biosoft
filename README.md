@@ -15,7 +15,7 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 2. Ejecutar el script de dependencias **dependencies.sh** 
    ```bash
    ./dependencies.sh
-   
+  
 ## Uso
 ```bash
 BIOSOFT: Automatiza la predicción de localización subcelular y NLS usando PSORTb, Deeplocpro y NLStradamus.
@@ -29,8 +29,8 @@ OPCIONES:
   --help             Muestra este mensaje de ayuda.
 
 #Ejemplo:
-./main.sh --proteoma proteoma.fasta --output resultados --gram negative
-
+  ./main.sh --proteoma proteoma.fasta --output resultados --gram negative
+```
 
 ## Resultados
 - psortb_results/: Predicciones de PSORTb.
@@ -38,3 +38,4 @@ OPCIONES:
 - extracelulares_consenso.csv: Resultados combinados de PSORTb y DeepLoc.
 - Extracellular_proteins.fasta: Secuencias FASTA de proteínas extracelulares.
 - resultsNLS.csv: Predicciones de NLS por NLStradamus.
+
