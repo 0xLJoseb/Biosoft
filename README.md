@@ -4,7 +4,7 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 - **Dependencias:**
   - Docker (para PSORTb).
 - **Requisitos del sistema:**
-  - Memoria RAM suficiente (recomendado al menos 8 gb de RAM).
+  - Memoria RAM suficiente (recomendado al menos 8 gb de RAM disponibles).
   - Conexión a Internet (para descargar dependencias y conectar con PSORTb).
 
 ## Instalación
@@ -22,6 +22,10 @@ BIOSOFT: Automatiza la predicción de localización subcelular y NLS usando PSOR
 [*]Uso: ./main.sh [OPCIONES]
 
 OPCIONES:
+  --site SITE        Lugar de localización a analizar. Por defecto: Extracellular.
+     [*] Extracellular
+     [*] Periplasmic
+     [*] Outer Membrane
   --gram GRAM        Grupo Gram del organismo (negative, positive, archaea). Por defecto: negative.
   --proteoma FILE    Archivo FASTA con el proteoma de entrada. Por defecto: proteoma.fasta.
   --output DIR       Directorio de salida para los resultados. Por defecto: resultados/.
@@ -29,7 +33,7 @@ OPCIONES:
   --help             Muestra este mensaje de ayuda.
 
 #Ejemplo:
-  ./main.sh --proteoma proteoma.fasta --output resultados --gram negative
+  ./main.sh --proteoma proteoma.fasta --output resultados --gram negative --site Extracellular
 ```
 
 ## Resultados
