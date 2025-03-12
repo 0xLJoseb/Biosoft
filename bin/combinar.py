@@ -26,7 +26,19 @@ archivo1 = pd.read_csv(ruta_arc1, header=None, names=["Accession number", "Local
 archivo2 = pd.read_csv(ruta_arc2, header=None, names=["Accession number", "Localization", "Score"])
 
 # Concatenar
-combinado = pd.concat([archivo1, archivo2])
+
+if archivo1.empty and archivo2.empty:
+    print("Ambos archivos están vacíos. No hay datos para combinar.")
+    exit()
+elif archivo1.empty:
+    print("El archivo de PSORTb está vacío. Usando solo el archivo de Deeploc.")
+    combinado = archivo2
+elif archivo2.empty:
+    print("El archivo de Deeploc está vacío. Usando solo el archivo de PSORTb.")
+    combinado = archivo1
+else:
+    # Concatenar si ambos archivos tienen datos
+    combinado = pd.concat([archivo1, archivo2])
 
 # Agrupar con groupby columnas: 'Accession number' y 'Localization', y promedio de scores para los duplicados
 resultado = combinado.groupby(["Accession number", "Localization"], as_index=False).mean()
@@ -40,3 +52,4 @@ resultado = resultado.drop(columns=["Accession number numeric"]) # Dropeamos la 
 resultado.to_csv(args.output, index=False) #Convertimos el DF resultado en un CSV y sin indice.
 
 print(f"El archivo combinado se ha guardado en: {args.output}")
+

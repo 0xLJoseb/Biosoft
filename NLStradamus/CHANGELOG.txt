@@ -1,0 +1,83 @@
+# ##############################################################################
+# NLStradamus FOR DISTRIBUTION
+# Copyright Alex Nguyen Ba 2012
+#
+# LICENCE 
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# ##############################################################################
+
+CHANGE LOG
+
+# ##############################################################################
+# Version 1.8 2012/10/19 
+# ##############################################################################
+
+- Now compiles correctly with the newer versions of GCC.
+
+# ##############################################################################
+# Version 1.7 2011/04/14 
+# ##############################################################################
+
+- Thanks to Peter Cock from The James Hutton Institute for pointing out the need for the fixes in this patch.
+- Now handles zero-length sequences by skipping them.
+- Includes a tab delimited flag (-tab) with header and no summary. 
+- Quiet mode is now on by default. Tab delimited flag forces quiet mode.
+- Order of sequences now retained even with -cpu threading.
+- C++ distribution now included. Compile using : g++ NLStradamus.cpp -o NLStradamus -O3
+- C++ distribution is not heavily tested and is still in beta. It is still recommended over the perl script.
+- Posterior probability of the segment is now displayed instead of the old >threshold
+
+
+# ##############################################################################
+# Version 1.6 2011/03/18 
+# ##############################################################################
+
+- Fixed CPU flag to actually changing the number of CPU used.
+
+# ##############################################################################
+# Version 1.5 2010/11/04 
+# ##############################################################################
+
+- Thanks to Ron Gejman from Tarakhovsky Lab at the Rockefeller University for pointing out that sequences with amino acids other than the standard 20 caused the predictor to crash.
+- NLStradamus now considers the X symbol as any amino acid - B as D or N - Z as E or Q. 
+- The model for these non-standard amino acids is the sum of their possibilities. Therefore, the probability of "X" in both the BG and NLS state is 1.
+- Other symbols are now completely ignored.
+- Added a newline character at the end of the output.
+- The default CPU count for multithreading is now set to 1 as opposed to 25. Note that setting the value higher than the CPU count will not cause any weird behavior but may be slower than expected.
+
+# ##############################################################################
+# Version 1.4 2010/10/29 Change log entry date.
+# ##############################################################################
+
+- Allows multithreading with -cpu flag.
+
+# ##############################################################################
+# Version 1.2 2008/11/11
+# ##############################################################################
+
+- Fixed a memory leak. NLStradamus should run much faster now.
+
+# ##############################################################################
+# Version 1.1 2008/10/17
+# ##############################################################################
+
+- Fixed an issue with the Viterbi result display for the four state model.
+
+# ##############################################################################
+# Version 1.0 2008/10/13
+# ##############################################################################
+
+- First release of NLStradamus
