@@ -56,7 +56,7 @@ fi
 
 tar -xzf NLStradamus.tar.gz
 mkdir NLStradamus
-mv CHANGELOG.txt example* NLStradamus.cpp README* mcm3.fasta nlstradamus.pl NLStradamus
+mv CHANGELOG.txt example* NLStradamus.cpp README.txt mcm3.fasta nlstradamus.pl NLStradamus
 rm NLStradamus.tar.gz
 
 #Verif
