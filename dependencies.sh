@@ -1,8 +1,12 @@
 #!/bin/bash
 #Codigo encargado de instalar en el equipo todo lo que se necesita para ejecutar el script sin problema.
+
+
+#DOCKER
+
+#Quitar comentarios si es necesario instalar docker.
 #Instalando Docker
-#[NO necesario por ahora]
-#echo "[1/5] Instalando Docker..."
+#echo "[?/?] Instalando Docker..."
 #sudo apt-get update && sudo apt-get install -y docker.io docker-compose wget tar
 #sudo systemctl enable docker
 #sudo usermod -aG docker $USER #Ejecutamos Docker sin sudo
@@ -68,7 +72,7 @@ fi
 #Verif psortb & NLStradamus
 
 [ -f "psortb" ] && echo "[+] PSORTb instalado." || echo "[X] Error: PSORTb no encontrado."
-[ -d "NLStradamus" ] && echo "[+] NLStradamus instalado." || echo "[X] Error: NLStradmus no encontrado."
+[ -d "NLStradamus" ] && echo "[+] NLStradamus instalado." || echo "[X] Error: NLStradamus no encontrado."
 
 echo "[+] Instalación completada. Cerrar y reiniciar la terminal."
 
