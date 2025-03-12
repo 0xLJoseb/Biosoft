@@ -6,5 +6,5 @@ Se han realizado los siguientes cambios sobre el proyecto en general
  
  - En el archivo combinar.py se hicieron ajustes para la situacion en la que alguno de los dos resultados de prediccion (PSORTb | DeepLocPro) se encontraran vacios.
  
- - Se realizaron diversos ajustes de sintaxis a lo largo del código por si el usuario decide colocar un nombre con espacios a la carpeta de output
+ - Se realizaron diversos ajustes de sintaxis a lo largo del código por si el usuario decide colocar un nombre con espacios a la carpeta de output. Además, se arregla el README.md
  
