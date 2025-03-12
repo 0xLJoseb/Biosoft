@@ -126,10 +126,9 @@ run_psortb() {
 	#Se ejecuta psortb
 	./psortb -i "$PROTEOMA_INPUT" -r "$OUTPUT_DIR/psortb_results" "$PSORTB_FLAG" > "$OUTPUT_DIR/logs/psortb.log" 2>&1 # Almacenamiento de errores en un .log
 
-	#Filtrando resultados Extracelulares de PSORTb con awk.
-	#Agregar por ejemplo "NO confirmado: ... in_scores && (/Extracellular/  || /Cytoplasmic/) && NF == 3 [NO implementado --> Pendiente]
+	#Filtrando resultados de proteinas predichas por PSORTb con awk.
 	echo -e "${yellowColour}[!]${endColour} Filtrando resultados para el sitio de localizacion: \"$locPSORTB_FLAG"" de PSORTb"
-	#CONSIDERACIONES: Filtramos en el campo "Localization Scores" porque no siempre todo lo que sea posiblemente extracelular, mostrara este resultado en el campo "Final Prediction".
+	#CONSIDERACIONES: Filtramos en el campo "Localization Scores" porque no siempre todo lo que sea posiblemente "X" localizacion, mostrara este resultado en el campo "Final Prediction".
 	#Pasamos a awk la flag con el parametro -v
 	awk -v flag="$locPSORTB_FLAG" '/^SeqID:/ {seqid = $2} /Localization Scores:/ {in_scores = 1; next} in_scores && $0 ~ flag {if ($2 > 5.0) print seqid, $1, $2; in_scores = 0}' "$OUTPUT_DIR"/psortb_results/*.txt > "$OUTPUT_DIR"/psortb_results/output.txt #Aqui eventualmente en lugar de capturar por "*.txt" podriamos acceder al nombre real del archivo generado por psortb que se almacena en la carpeta de logs -- [FUNC. PENDIENTE]
 	
@@ -174,7 +173,7 @@ run_deeploc(){
 	deeplocpro -f $PROTEOMA_INPUT -o "$OUTPUT_DIR"/deeploc_results -g $deeploc_flag
 
 	#Filtrando resultados extracelulares de deeplocpro con grep
-#ESTOY AQUI
+
 	cat "$OUTPUT_DIR"/deeploc_results/results*csv | grep "$locdeeploc_flag" > "$OUTPUT_DIR"/deeploc_results/records.txt
 	echo -e "${yellowColour}[!]${endColour} El filtrado se ha almacenado en la ruta: "$OUTPUT_DIR"/deeploc_results/"
 
@@ -241,14 +240,13 @@ combine_predicts(){
 
 	fi
 
-#DESDE AQUI PENDIENTE EL CAMBIO DE NOMBRES EN VARIABLES COMO "EXTRACELLULAR"
 
 # ======= extraer.py =======
 #Se crea un FASTA con las secuencias en AA's para todo lo predicho
 
 	mkdir -p "$OUTPUT_DIR/NLSPredicts"
 	echo -ne "\n${purpleColour}[4/5]${endColour} Generando un archivo .fasta con las proteinas predichas con localizacion \"$loc_flag\""" por PSORTb & Deeplocpro¸\n"
-	python3 bin/extraer.py --score "$OUTPUT_DIR/Comb/archivo_combinado.csv" --fasta "$PROTEOMA_INPUT" --output "$OUTPUT_DIR/NLSPredicts/Extracellular_proteins.fasta"
+	python3 bin/extraer.py --score "$OUTPUT_DIR/Comb/archivo_combinado.csv" --fasta "$PROTEOMA_INPUT" --output "$OUTPUT_DIR/NLSPredicts/Predicted_proteins.fasta"
 	
 	if [[ $? -eq 0 ]]; then
 		echo -ne "\t${greenColour}[+]${endColour} The .fasta file has been succesfully created!.\n"
@@ -261,9 +259,20 @@ combine_predicts(){
 
 run_nlstradamus(){
 
+	#loc_flag
+	local loc_flag
+	case "$SITE" in
+		"Extracellular") loc_flag="Extracellular" ;;
+    		"Periplasmic") loc_flag="Periplasmic" ;;
+    		"Outer Membrane") loc_flag="Outer Membrane" ;;
+    		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
+	esac
+
+	
+
 	echo -ne "\n${purpleColour}[5/5]${endColour} Realizando el análisis de NLS sobre el proteoma generado!\n"
 	echo -ne "Default parameters: -t 0.7 (threshold for true NLS) and -m 2 (four-state bipartite model for complex NLS detection).\n"
-	perl NLStradamus/nlstradamus.pl -i "$OUTPUT_DIR/NLSPredicts/Extracellular_proteins.fasta" -t 0.7 -m 2 -cpu $THREADS -tab | sed 's/\t/,/g' > "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv"
+	perl NLStradamus/nlstradamus.pl -i "$OUTPUT_DIR/NLSPredicts/Predicted_proteins.fasta" -t 0.7 -m 2 -cpu $THREADS -tab | sed 's/\t/,/g' > "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv"
 	
 	if [[ $? -eq 0 ]]; then
 		echo -ne "\t${greenColour}[+]${endColour} NLS predictions have been successfully realized!\n"
@@ -275,7 +284,7 @@ run_nlstradamus(){
 
 	local VALOR_EXT
 	VALOR_EXT=$(tail -n +2 "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv" | wc -l)
-	echo -e "${yellowColour}[!]${endColour} Se han encontrado $VALOR_EXT proteinas extracelulares con NLS."; sleep 3
+	echo -e "${yellowColour}[!]${endColour} Se han encontrado $VALOR_EXT proteinas de localizacion \"$loc_flag\" con NLS."; sleep 3
 
 
 	#-t 0.7: Sets a threshold of 0.7 to consider sites as true NLS.
