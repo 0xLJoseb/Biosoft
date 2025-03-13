@@ -16,7 +16,7 @@ set -euo pipefail #Script termina si cualquier comando falla, script termina si 
 #Valores por defecto
 SITE="Extracellular"
 GRAM_GROUP="negative"
-PROTEOMA_INPUT="proteoma.fasta"
+PROTEOMA_INPUT="extracellular.fasta"
 OUTPUT_DIR="resultados"
 THREADS=$(nproc) #Todos los nucleos posibles
 

@@ -1,3 +1,13 @@
+***************12/03/2025***************
+
+Se han realizado los siguientes cambios en el proyecto en general
+
+ - Cambios en main.sh, ahora el proteoma por defecto es "extracellular.fasta"
+ - Cambios en los proteomas de test ((extracellular, periplasmic, outer).fasta), ahora estan anotados con los resultados que deberian obtenerse para verificar que todo esta bien.
+ - Cambios en el bin/combinar.py en los casos en los que se hiciera un analisis para localizacion "Outer Membrane" esto debido a que PSORTb y DeepLocPro utilizan "OuterMembrane" y "Outer Membrane" Respectivamente para las proteinas de esta localizacion, se estaban generando registros duplicados en "archivo_combinado.csv", el error fue solucionado mediante una funcion que se encarga de normalizar los nombres de localizacion a "Outer Membrane" en estos casos
+
+
+
 ***************11/03/2025***************
 
 Se han realizado los siguientes cambios sobre el proyecto en general

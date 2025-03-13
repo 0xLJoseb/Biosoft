@@ -4,13 +4,17 @@ import os
 import re
 import argparse #Para automatizar la entrada
 
-#Para que se vea ordenado de menor a mayor
+# Para que se vea ordenado de menor a mayor
 def ext_numero(acc_num):
     numeros = re.findall(r'\d+', acc_num) # Busca ultima secuencia de digitos en la cadena
     
     return int(numeros[-1]) if numeros else float('inf') # Si no hay mas numeros retorna infinito
 
-#Configurando agumentos de entrada
+# Función para normalizar nombre de localizacion [Outer Membrane]
+def norm_loc(localization):
+    return localization.replace("OuterMembrane", "Outer Membrane") #Convertimos OuterMembrane a Outer Membrane
+
+# Configurando agumentos de entrada
 
 parser = argparse.ArgumentParser(description='Combina resultados de PSORTb y Deeplocpro')
 parser.add_argument('--psortb', required=True, help='Ruta al archivo CSV de PSORTb')
@@ -25,7 +29,13 @@ ruta_arc2 = args.deeploc
 archivo1 = pd.read_csv(ruta_arc1, header=None, names=["Accession number", "Localization", "Score"])
 archivo2 = pd.read_csv(ruta_arc2, header=None, names=["Accession number", "Localization", "Score"])
 
-# Concatenar
+# Normalizacion loc. 
+
+archivo1["Localization"] = archivo1["Localization"].apply(norm_loc)
+archivo2["Localization"] = archivo2["Localization"].apply(norm_loc)
+
+
+# Verif Vacios & Concatenar
 
 if archivo1.empty and archivo2.empty:
     print("Ambos archivos están vacíos. No hay datos para combinar.")
@@ -38,7 +48,7 @@ elif archivo2.empty:
     combinado = archivo1
 else:
     # Concatenar si ambos archivos tienen datos
-    combinado = pd.concat([archivo1, archivo2])
+    combinado = pd.concat([archivo1, archivo2], ignore_index=True)
 
 # Agrupar con groupby columnas: 'Accession number' y 'Localization', y promedio de scores para los duplicados
 resultado = combinado.groupby(["Accession number", "Localization"], as_index=False).mean()
