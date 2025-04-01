@@ -10,7 +10,7 @@ Automatiza el proceso de localización subcelular de proteínas utilizando herra
 ## Instalación
 1. Clonar el repositorio:
    ```bash
-   git clone https://github.com/0xLJoseb/Biosoft.git
+   git clone https://github.com/0xLJoseb/Biosoft
    cd Biosoft
 2. Ejecutar el script de dependencias **dependencies.sh** 
    ```bash
