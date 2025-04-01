@@ -130,7 +130,7 @@ run_psortb() {
 	echo -e "${yellowColour}[!]${endColour} Filtrando resultados para el sitio de localizacion: \"$locPSORTB_FLAG"" de PSORTb"
 	#CONSIDERACIONES: Filtramos en el campo "Localization Scores" porque no siempre todo lo que sea posiblemente "X" localizacion, mostrara este resultado en el campo "Final Prediction".
 	#Pasamos a awk la flag con el parametro -v
-	awk -v flag="$locPSORTB_FLAG" '/^SeqID:/ {seqid = $2} /Localization Scores:/ {in_scores = 1; next} in_scores && $0 ~ flag {if ($2 > 5.0) print seqid, $1, $2; in_scores = 0}' "$OUTPUT_DIR"/psortb_results/*.txt > "$OUTPUT_DIR"/psortb_results/output.txt #Aqui eventualmente en lugar de capturar por "*.txt" podriamos acceder al nombre real del archivo generado por psortb que se almacena en la carpeta de logs -- [FUNC. PENDIENTE]
+	awk -v flag="$locPSORTB_FLAG" '/^SeqID:/ {seqid = $2} /Localization Scores:/ {in_scores = 1; next} in_scores && $0 ~ flag {if ($2 > 5.0) print seqid, $1, $2; in_scores = 0}' "$OUTPUT_DIR"/psortb_results/*.txt > "$OUTPUT_DIR"/psortb_results/output.txt
 	
 	echo -e "${yellowColour}[!]${endColour} El filtrado se ha almacenado en la ruta: "$OUTPUT_DIR"/psortb_results/"
 	
