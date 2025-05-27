@@ -1,5 +1,6 @@
 #Files en .gitignore
 NLStradamus/
+README_C.txt
 deeplocpro/
 psortb
 venv_deeploc/
