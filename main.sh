@@ -17,7 +17,7 @@ set -euo pipefail #Script termina si cualquier comando falla, script termina si 
 SITE="Extracellular"
 GRAM_GROUP="negative"
 PROTEOMA_INPUT="extracellular.fasta"
-OUTPUT_DIR="resultados"
+OUTPUT_DIR="results"
 THREADS=$(nproc) #Todos los nucleos posibles
 
 
@@ -25,22 +25,23 @@ THREADS=$(nproc) #Todos los nucleos posibles
 show_help() {
    
    
-    echo -e "${turquoiseColour}\nBIOSOFT:${endColour} ${grayColour}Automatiza la predicción de localización subcelular y NLS usando PSORTb, Deeplocpro y NLStradamus.${endColour}"
-    echo -e "${redColour}[*]${endColour}${grayColour}Uso: $0 [OPCIONES]\n${endColour}"
+    echo -e "${turquoiseColour}\nBIOSOFT:${endColour} ${grayColour}Automates the prediction of subcellular localization and NLS using PSORTb, Deeplocpro, and NLStradamus.${endColour}"
+    echo -e "${redColour}[*]${endColour}${grayColour}Usage: $0 [OPTIONS]\n${endColour}"
     echo
-    echo -e "${turquoiseColour}OPCIONES:${endColour}"
-    echo -e " ${redColour} --site SITE${endColour}	     ${grayColour}Lugar de localización a analizar. Por defecto:${endColour} ${redColour}Extracellular.${endColour}"
+    echo -e "${turquoiseColour}OPTIONS:${endColour}"
+    echo -e " ${redColour} --site SITE${endColour}	     ${grayColour}Location to analyze. Default:${endColour} ${redColour}Extracellular.${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Extracellular${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Periplasmic${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Outer Membrane${endColour}"
-    echo -e "  ${redColour}--gram GRAM${endColour}        ${grayColour}Grupo Gram del organismo (negative, positive, archaea). Por defecto:${endColour} ${redColour}negative.${endColour}"
-    echo -e "  ${redColour}--proteoma FILE${endColour}    ${grayColour}Archivo FASTA con el proteoma de entrada. Por defecto:${endColour} ${redColour}proteoma.fasta.${endColour}"
-    echo -e "  ${redColour}--output DIR${endColour}       ${grayColour}Directorio de salida para los resultados. Por defecto:${endColour} ${redColour}resultados/.${endColour}"
-    echo -e "  ${redColour}--threads N${endColour}        ${grayColour}Número de hilos para NLStradamus. Por defecto:${endColour} ${redColour}todos los núcleos disponibles.${endColour}"
-    echo -e "  ${grayColour}--help             Muestra este mensaje de ayuda.${endColour}"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Cytoplasmic${endColour}"
+    echo -e "  ${redColour}--gram GRAM${endColour}        ${grayColour}Gram group of the organism (negative, positive, archaea). Default:${endColour} ${redColour}negative.${endColour}"
+    echo -e "  ${redColour}--proteome FILE${endColour}    ${grayColour}FASTA file with the input proteome. Default:${endColour} ${redColour}proteoma.fasta.${endColour}"
+    echo -e "  ${redColour}--output DIR${endColour}       ${grayColour}Output directory for results. Default:${endColour} ${redColour}results/.${endColour}"
+    echo -e "  ${redColour}--threads N${endColour}        ${grayColour}Number of threads for NLStradamus. Default:${endColour} ${redColour}all available cores.${endColour}"
+    echo -e "  ${grayColour}--help             Shows this help message.${endColour}"
     echo
-    echo -e "${grayColour}Ejemplo:${endColour}"
-    echo -e "  ${grayColour}$0 --proteoma proteoma.fasta --output resultados --gram negative --site Extracellular\n${endColour}"
+    echo -e "${grayColour}Example:${endColour}"
+    echo -e "  ${grayColour}$0 --proteome proteoma.fasta --output resultados --gram negative --site Extracellular\n${endColour}"
     exit 0
 }
 
@@ -60,7 +61,7 @@ while [[ $# -gt 0 ]]; do
 			GRAM_GROUP="$2" # Se toma el argumento que le sigue a "--gram"
 			shift 2 # Se "elimina" a "--gram" y su argumento
 			;;
-		--proteoma)
+		--proteome)
 			PROTEOMA_INPUT="$2"
 			shift 2
 			;;
@@ -112,6 +113,7 @@ run_psortb() {
 		"Extracellular") locPSORTB_FLAG="Extracellular" ;;
 		"Periplasmic") locPSORTB_FLAG="Periplasmic" ;;
 		"Outer Membrane") locPSORTB_FLAG="OuterMembrane" ;;
+		"Cytoplasmic") locPSORTB_FLAG="Cytoplasmic" ;;
 		*) echo -ne "${redColour}[X]${endColour} Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
 	esac
         
@@ -129,16 +131,22 @@ run_psortb() {
 	#Filtrando resultados de proteinas predichas por PSORTb con awk.
 	echo -e "${yellowColour}[!]${endColour} Filtrando resultados para el sitio de localizacion: \"$locPSORTB_FLAG"" de PSORTb"
 	#CONSIDERACIONES: Filtramos en el campo "Localization Scores" porque no siempre todo lo que sea posiblemente "X" localizacion, mostrara este resultado en el campo "Final Prediction".
+	#OJO, Primero condicional con Cytoplasmic porque la captura de cadenas para este parametro utiliza otro comando
+	if [ "$locPSORTB_FLAG" == "Cytoplasmic" ]; then
 	#Pasamos a awk la flag con el parametro -v
-	awk -v flag="$locPSORTB_FLAG" '/^SeqID:/ {seqid = $2} /Localization Scores:/ {in_scores = 1; next} in_scores && $0 ~ flag {if ($2 > 5.0) print seqid, $1, $2; in_scores = 0}' "$OUTPUT_DIR"/psortb_results/*.txt > "$OUTPUT_DIR"/psortb_results/output.txt
+		awk -v flag="$locPSORTB_FLAG" '/^SeqID:/ {seqid = $2} /Localization Scores:/ {in_scores = 1; next} in_scores && $1 == flag {if ($2 > 5.0) print seqid, $1, $2; in_scores = 0}' "$OUTPUT_DIR"/psortb_results/*.txt > "$OUTPUT_DIR"/psortb_results/output.txt
+	else
+	#Utilizamos otra expresión para el resto de casos de $locPSORTB_FLAG
+		awk -v flag="$locPSORTB_FLAG" '/^SeqID:/ {seqid = $2} /Localization Scores:/ {in_scores = 1; next} in_scores && $0 ~ flag {if ($2 > 5.0) print seqid, $1, $2; in_scores = 0}' "$OUTPUT_DIR"/psortb_results/*.txt > "$OUTPUT_DIR"/psortb_results/output.txt
+	fi
 	
 	echo -e "${yellowColour}[!]${endColour} El filtrado se ha almacenado en la ruta: "$OUTPUT_DIR"/psortb_results/"
 	
 	local VALOR_EXT
 	VALOR_EXT=$(cat $OUTPUT_DIR/psortb_results/output.txt | wc -l)
 	echo -e "${yellowColour}[!]${endColour} Se han encontrado $VALOR_EXT proteinas para el sitio de localizacion: \"$locPSORTB_FLAG\""; sleep 3
-}
 
+}
 # *************** Ejecución de deeplocpro ***************
 
 run_deeploc(){
@@ -151,6 +159,7 @@ run_deeploc(){
 		"Extracellular") locdeeploc_flag="Extracellular" ;;
 		"Periplasmic") locdeeploc_flag="Periplasmic" ;;
 		"Outer Membrane") locdeeploc_flag="Outer Membrane" ;;
+		"Cytoplasmic") locdeeploc_flag=",Cytoplasmic,";;
 		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
 	esac
 	
@@ -163,6 +172,16 @@ run_deeploc(){
 		"archaea") deeploc_flag="archaea" ;;
 		*) echo -ne "${redColour}[X]${endColour}Grupo Gram no valido. \nUsando grupo Gram por defecto.\n"; deeploc_flag="negative" ;;
 	esac
+
+	local printlocdeeploc_flag
+	case "$SITE" in
+		"Extracellular") printlocdeeploc_flag="Extracellular" ;;
+		"Periplasmic") printlocdeeploc_flag="Periplasmic" ;;
+		"Outer Membrane") printlocdeeploc_flag="Outer Membrane" ;;
+		"Cytoplasmic") printlocdeeploc_flag="Cytoplasmic" ;;
+		*) printlocdeeploc_flag="Extracellular" ;;
+	esac
+
 
 
 #Activamos el entorno virtual para deeplocpro
@@ -179,7 +198,7 @@ run_deeploc(){
 
 	local VALOR_EXT
 	VALOR_EXT=$(tail -n +2 ""$OUTPUT_DIR"/deeploc_results/records.txt" | wc -l)
-	echo -e "${yellowColour}[!]${endColour} Se han encontrado $VALOR_EXT proteinas con la localizacion: \"$locdeeploc_flag\"."; sleep 3
+	echo -e "${yellowColour}[!]${endColour} Se han encontrado $VALOR_EXT proteinas con la localizacion: \"$printlocdeeploc_flag\"."; sleep 3
 
 	deactivate #Desactivamos el venv
 
@@ -194,15 +213,16 @@ combine_predicts(){
     		"Extracellular") loc_flag="Extracellular" ;;
     		"Periplasmic") loc_flag="Periplasmic" ;;
     		"Outer Membrane") loc_flag="Outer Membrane" ;;
+		"Cytoplasmic") loc_flag="Cytoplasmic" ;;
     		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
 	esac
 	
 
 	case "$loc_flag" in
-		
     		"Extracellular") score_column=5 ;;
     		"Periplasmic") score_column=9 ;;
     		"Outer Membrane") score_column=8 ;;
+		"Cytoplasmic") score_column=6 ;;
     		*) score_column=5 ;;  # Por defecto --> Extracellular
 	esac
 
@@ -234,9 +254,9 @@ combine_predicts(){
 	python3 bin/combinar.py --psortb "$OUTPUT_DIR/Comb/output_arreglado.csv" --deeploc "$OUTPUT_DIR/Comb/records_arreglado.csv" --output "$OUTPUT_DIR/Comb/archivo_combinado.csv"
 	
 	if [[ $? -eq 0 ]]; then
-		echo -ne "\t${greenColour}[+]${endColour} The predictions have been succesfully combined!.\n"
+		echo -ne "\t${greenColour}[+]${endColour} The predictions have been successfully completed and combined!.\n"
 	else
-		echo -ne "\t${redColour}[X]${endColour} Algo ha salido mal.\n"
+		echo -ne "\t${redColour}[X]${endColour} Something has gone wrong.\n"
 
 	fi
 
@@ -249,7 +269,7 @@ combine_predicts(){
 	python3 bin/extraer.py --score "$OUTPUT_DIR/Comb/archivo_combinado.csv" --fasta "$PROTEOMA_INPUT" --output "$OUTPUT_DIR/NLSPredicts/Predicted_proteins.fasta"
 	
 	if [[ $? -eq 0 ]]; then
-		echo -ne "\t${greenColour}[+]${endColour} The .fasta file has been succesfully created!.\n"
+		echo -ne "\t${greenColour}[+]${endColour} The .fasta file has been successfully created!.\n"
 	else
 		echo -ne "\t${redColour}[X]${endColour} Something has gone wrong.\n"
 
@@ -265,6 +285,7 @@ run_nlstradamus(){
 		"Extracellular") loc_flag="Extracellular" ;;
     		"Periplasmic") loc_flag="Periplasmic" ;;
     		"Outer Membrane") loc_flag="Outer Membrane" ;;
+		"Cytoplasmic") loc_flag="Cytoplasmic" ;;
     		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
 	esac
 
@@ -275,7 +296,7 @@ run_nlstradamus(){
 	perl NLStradamus/nlstradamus.pl -i "$OUTPUT_DIR/NLSPredicts/Predicted_proteins.fasta" -t 0.7 -m 2 -cpu $THREADS -tab | sed 's/\t/,/g' > "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv"
 	
 	if [[ $? -eq 0 ]]; then
-		echo -ne "\t${greenColour}[+]${endColour} NLS predictions have been successfully realized!\n"
+		echo -ne "\t${greenColour}[+]${endColour} The NLS predictions have been successfully completed!\n"
 		echo -ne "\t${greenColour}[+]${endColour} Check the "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv" directory!\n"
 	else
 		echo -ne "\t${redColour}[X]${endColour} Something has gone wrong.\n"
