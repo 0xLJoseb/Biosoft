@@ -1,63 +1,65 @@
 # Biosoft
-Automatiza el proceso de localización subcelular de proteínas utilizando herramientas bioinformáticas como PSORTb, DeepLocPro 1.0 y NLStradamus.
+Automates the prediction of subcellular localization and NLS using PSORTb, Deeplocpro 1.0 and NLStradamus.
 ## Requisitos
-- **Dependencias:**
-  - Docker (para PSORTb).
-- **Requisitos del sistema:**
-  - Memoria RAM suficiente (recomendado al menos 8 gb de RAM disponibles).
-  - Conexión a Internet (para descargar dependencias y conectar con PSORTb).
+- **Dependencies:**
+  - Docker (for PSORTb).
+- **System requirements:**
+  - Recommended disk space: approximately 6 GB
+  - At least 8 GB of RAM recommended
+  - Internet connection: Needed to download dependencies and Docker images.
 
 ## Instalación
-1. Clonar el repositorio:
+1. Clone the repository:
    ```bash
    git clone https://github.com/0xLJoseb/Biosoft
    cd Biosoft
-2. Ejecutar el script de dependencias **dependencies.sh** 
+2. Run the dependencies script **dependencies.sh** 
    ```bash
    ./dependencies.sh
   
-## Uso
+## Usage
 ```bash
-BIOSOFT: Automatiza la predicción de localización subcelular y NLS usando PSORTb, Deeplocpro y NLStradamus.
-[*]Uso: ./main.sh [OPCIONES]
+BIOSOFT: Automates the prediction of subcellular localization and NLS using PSORTb, Deeplocpro and NLStradamus.
+[*]Usage: ./main.sh [OPTIONS]
 
-OPCIONES:
-  --site SITE        Lugar de localización a analizar. Por defecto: Extracellular.
+OPTIONS:
+  --site SITE        Location to analyze. Default: Extracellular.
      [*] Extracellular
      [*] Periplasmic
      [*] Outer Membrane
-  --gram GRAM        Grupo Gram del organismo (negative, positive, archaea). Por defecto: negative.
-  --proteoma FILE    Archivo FASTA con el proteoma de entrada. Por defecto: proteoma.fasta.
-  --output DIR       Directorio de salida para los resultados. Por defecto: resultados/.
-  --threads N        Número de hilos para NLStradamus. Por defecto: todos los núcleos disponibles.
-  --help             Muestra este mensaje de ayuda.
+     [*] Cytoplasmic
+  --gram GRAM        Gram group of the organism (negative, positive, archaea). Default: negative.
+  --proteome FILE    FASTA file with the input proteome. Default: proteoma.fasta.
+  --output DIR       Output directory for results. Default: resultados/.
+  --threads N        Number of threads for NLStradamus. Default: all available cores.
+  --help             Shows this help message.
 
-#Ejemplo:
-  ./main.sh --proteoma proteoma.fasta --output resultados --gram negative --site Extracellular
+#Example:
+  ./main.sh --proteome proteoma.fasta --output resultados --gram negative --site Extracellular
 ```
 
 ## Resultados
-- psortb_results/: Predicciones de PSORTb.
-- deeploc_results/: Predicciones de DeepLoc.
-- Comb/: Directorio con un CSV con ambas predicciones.
-- NLSPredicts/: Directorio con un CSV con resultados de NLS.
+- psortb_results/: PSORTb predictions.
+- deeploc_results/: Deeplocpro predictions.
+- Comb/: Directory with a CSV containing both predictions.
+- NLSPredicts/: Directory containing NLS results.
 
-## Herramientas Utilizadas
-Este proyecto utiliza las siguientes herramientas bioinformáticas:
+## Tools Used
+This project uses the following bioinformatic tools:
 
 - **PSORTb**  
-  Herramienta para predecir la localización subcelular de proteínas en bacterias. Disponible en: [brinkmanlab/psortb_commandline_docker](https://github.com/brinkmanlab/psortb_commandline_docker).  
+  Tool for predicting the subcellular localization of proteins in bacteria. Available at: [brinkmanlab/psortb_commandline_docker](https://github.com/brinkmanlab/psortb_commandline_docker).  
 
 - **DeepLoc**  
-  Herramienta de predicción de localización subcelular basada en redes neuronales. Disponible en: [Jaimomar99/deeplocpro](https://github.com/Jaimomar99/deeplocpro).  
+  Neural network-based tool for subcellular localization prediction. Available at: [Jaimomar99/deeplocpro](https://github.com/Jaimomar99/deeplocpro).  
 
 - **NLStradamus**  
-  Herramienta para predecir señales de localización nuclear (NLS). Disponible en: [NLStradamus](http://www.moseslab.csb.utoronto.ca/NLStradamus/).  
+  Tool for predicting nuclear localization signals (NLS). Available at: [NLStradamus](http://www.moseslab.csb.utoronto.ca/NLStradamus/).  
 
 [![PSORTb](https://img.shields.io/badge/PSORTb-GitHub-blue)](https://github.com/brinkmanlab/psortb_commandline_docker)
 [![DeepLoc](https://img.shields.io/badge/DeepLoc-GitHub-green)](https://github.com/Jaimomar99/deeplocpro)
 
-## Referencias
+## References
 - **PSORTb**
 
   PSORTb v3.0: N.Y. Yu, J.R. Wagner, M.R. Laird, G. Melli, S. Rey, R. Lo, P. Dao, S.C. Sahinalp, M. Ester, L.J. Foster, F.S.L. Brinkman (2010) PSORTb 3.0: Improved protein subcellular localization prediction with refined localization subcategories and predictive capabilities for all prokaryotes, Bioinformatics 26(13):1608-1615
