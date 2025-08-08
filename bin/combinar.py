@@ -12,7 +12,12 @@ def ext_numero(acc_num):
 
 # Función para normalizar nombre de localizacion [Outer Membrane]
 def norm_loc(localization):
-    return localization.replace("OuterMembrane", "Outer Membrane") #Convertimos OuterMembrane a Outer Membrane
+    replacements = {
+        "OuterMembrane": "Outer Membrane",
+        "Cell wall & surface": "Outer Membrane",
+        "CytoplasmicMembrane": "Cytoplasmic Membrane"
+    }
+    return replacements.get(localization, localization) #Convertimos cada palabra en su respectivo reemplazo
 
 # Configurando agumentos de entrada
 

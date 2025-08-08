@@ -113,6 +113,7 @@ run_psortb() {
 		"Extracellular") locPSORTB_FLAG="Extracellular" ;;
 		"Periplasmic") locPSORTB_FLAG="Periplasmic" ;;
 		"Outer Membrane") locPSORTB_FLAG="OuterMembrane" ;;
+    "Cytoplasmic Membrane") locPSORTB_FLAG="CytoplasmicMembrane" ;;
 		"Cytoplasmic") locPSORTB_FLAG="Cytoplasmic" ;;
 		*) echo -ne "${redColour}[X]${endColour} Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
 	esac
@@ -158,7 +159,8 @@ run_deeploc(){
 	case "$SITE" in
 		"Extracellular") locdeeploc_flag="Extracellular" ;;
 		"Periplasmic") locdeeploc_flag="Periplasmic" ;;
-		"Outer Membrane") locdeeploc_flag="Outer Membrane" ;;
+		"Outer Membrane") locdeeploc_flag="Outer Membrane|Cell wall & surface" ;; #Incluimos ambas categorias para psort y deeploc
+    "Cytoplasmic Membrane") locdeeploc_flag="Cytoplasmic Membrane" ;;
 		"Cytoplasmic") locdeeploc_flag=",Cytoplasmic,";;
 		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
 	esac
@@ -178,6 +180,7 @@ run_deeploc(){
 		"Extracellular") printlocdeeploc_flag="Extracellular" ;;
 		"Periplasmic") printlocdeeploc_flag="Periplasmic" ;;
 		"Outer Membrane") printlocdeeploc_flag="Outer Membrane" ;;
+    "Cytoplasmic Membrane") printlocdeeploc_flag="Cytoplasmic Membrane" ;;
 		"Cytoplasmic") printlocdeeploc_flag="Cytoplasmic" ;;
 		*) printlocdeeploc_flag="Extracellular" ;;
 	esac
@@ -193,7 +196,7 @@ run_deeploc(){
 
 	#Filtrando resultados extracelulares de deeplocpro con grep
 
-	cat "$OUTPUT_DIR"/deeploc_results/results*csv | grep "$locdeeploc_flag" > "$OUTPUT_DIR"/deeploc_results/records.txt
+	cat "$OUTPUT_DIR"/deeploc_results/results*csv | grep -E "$locdeeploc_flag" > "$OUTPUT_DIR"/deeploc_results/records.txt
 	echo -e "${yellowColour}[!]${endColour} El filtrado se ha almacenado en la ruta: "$OUTPUT_DIR"/deeploc_results/"
 
 	local VALOR_EXT
@@ -213,7 +216,8 @@ combine_predicts(){
     		"Extracellular") loc_flag="Extracellular" ;;
     		"Periplasmic") loc_flag="Periplasmic" ;;
     		"Outer Membrane") loc_flag="Outer Membrane" ;;
-		"Cytoplasmic") loc_flag="Cytoplasmic" ;;
+        "Cytoplasmic Membrane") loc_flag="Cytoplasmic Membrane" ;;
+        "Cytoplasmic") loc_flag="Cytoplasmic" ;;
     		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
 	esac
 	
@@ -222,7 +226,8 @@ combine_predicts(){
     		"Extracellular") score_column=5 ;;
     		"Periplasmic") score_column=9 ;;
     		"Outer Membrane") score_column=8 ;;
-		"Cytoplasmic") score_column=6 ;;
+        "Cytoplasmic Membrane") score_column=7;;
+        "Cytoplasmic") score_column=6 ;;
     		*) score_column=5 ;;  # Por defecto --> Extracellular
 	esac
 
@@ -240,8 +245,16 @@ combine_predicts(){
 
 	fi
 
-	awk -F',' -v col="$score_column" 'NR>1 {print $2 "," $3 "," $col}' ""$OUTPUT_DIR"/deeploc_results/records.txt" > ""$OUTPUT_DIR"/Comb/records_arreglado.csv"
-	
+  # *************** Deeplocpro: Tratamiento especial para "Outer Membrane" y "Cell wall & surface" **************
+  if [[ "$loc_flag" == "Outer Membrane" ]]; then
+    awk -F',' 'NR>1 {
+    if ($3 == "Outer Membrane") print $2 "," $3 "," $8;
+    else if ($3 == "Cell wall & surface") print $2 "," $3 "," $4;
+  }' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_arreglado.csv"
+  else
+  awk -F',' -v col="$score_column" 'NR>1 {print $2 "," $3 "," $col}' ""$OUTPUT_DIR"/deeploc_results/records.txt" > ""$OUTPUT_DIR"/Comb/records_arreglado.csv"
+  fi
+
 	if [[ $? -eq 0 ]]; then
 		echo -ne "\t${greenColour}[+]${endColour} Deeploc results created.\n"
 	else
@@ -282,12 +295,13 @@ run_nlstradamus(){
 	#loc_flag
 	local loc_flag
 	case "$SITE" in
-		"Extracellular") loc_flag="Extracellular" ;;
-    		"Periplasmic") loc_flag="Periplasmic" ;;
-    		"Outer Membrane") loc_flag="Outer Membrane" ;;
-		"Cytoplasmic") loc_flag="Cytoplasmic" ;;
-    		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
-	esac
+    "Extracellular") loc_flag="Extracellular" ;;
+    "Periplasmic") loc_flag="Periplasmic" ;;
+    "Outer Membrane") loc_flag="Outer Membrane" ;;
+    "Cytoplasmic Membrane") loc_flag="Cytoplasmic Membrane" ;;
+    "Cytoplasmic") loc_flag="Cytoplasmic" ;;
+    *) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
+  esac
 
 	
 
