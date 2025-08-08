@@ -1,3 +1,19 @@
+***************08/08/2025***************
+- New site flag:
+    Added support for the Cytoplasmic Membrane category.
+
+- Category unification:
+    The "Cell wall & surface" category from DeepLocPro is unified with "Outer Membrane" from PSORTb, making the predictions from both tools equivalent for this category.
+
+- Modification in bin/combinar.py:
+
+    Normalized prediction labels:
+
+        "CytoplasmicMembrane" → "Cytoplasmic Membrane"
+
+        "Cell wall & surface" → "Outer Membrane"
+
+
 ***************26/05/2025***************
 The following changes have been made to the overall project:
 
