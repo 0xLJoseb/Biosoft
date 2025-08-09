@@ -28,6 +28,8 @@ OPTIONS:
      [*] Periplasmic
      [*] Outer Membrane
      [*] Cytoplasmic
+     [*] Cytoplasmic Membrane
+}
   --gram GRAM        Gram group of the organism (negative, positive, archaea). Default: negative.
   --proteome FILE    FASTA file with the input proteome. Default: proteoma.fasta.
   --output DIR       Output directory for results. Default: resultados/.
