@@ -1,3 +1,7 @@
+***************09/08/2025***************
+- Modified 'bin/combinar.py' to add sys.exit(1) when both input files are empty, preventing the pipeline from continuing.
+- Updated 'main.sh' to stop execution if 'combinar.py' returns an error
+
 ***************08/08/2025***************
 - New site flag:
     Added support for the Cytoplasmic Membrane category.

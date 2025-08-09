@@ -1,6 +1,6 @@
 # Biosoft
 Automates the prediction of subcellular localization and NLS using PSORTb, Deeplocpro 1.0 and NLStradamus.
-## Requisitos
+## Requirements
 - **Dependencies:**
   - Docker (for PSORTb).
 - **System requirements:**
@@ -8,7 +8,7 @@ Automates the prediction of subcellular localization and NLS using PSORTb, Deepl
   - At least 8 GB of RAM recommended
   - Internet connection: Needed to download dependencies and Docker images.
 
-## Instalación
+## Installation
 1. Clone the repository:
    ```bash
    git clone https://github.com/0xLJoseb/Biosoft
@@ -38,7 +38,7 @@ OPTIONS:
   ./main.sh --proteome proteoma.fasta --output resultados --gram negative --site Extracellular
 ```
 
-## Resultados
+## Results
 - psortb_results/: PSORTb predictions.
 - deeploc_results/: Deeplocpro predictions.
 - Comb/: Directory with a CSV containing both predictions.

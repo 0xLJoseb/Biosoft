@@ -32,8 +32,10 @@ show_help() {
     echo -e " ${redColour} --site SITE${endColour}	     ${grayColour}Location to analyze. Default:${endColour} ${redColour}Extracellular.${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Extracellular${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Periplasmic${endColour}"
-    echo -e "     ${redColour}[*]${endColour} ${grayColour}Outer Membrane${endColour}"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Outer Membrane (write as 'Outer Membrane')${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Cytoplasmic${endColour}"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Cytoplasmic Membrane (write as 'Cytoplasmic Membrane')${endColour}\n"
+    
     echo -e "  ${redColour}--gram GRAM${endColour}        ${grayColour}Gram group of the organism (negative, positive, archaea). Default:${endColour} ${redColour}negative.${endColour}"
     echo -e "  ${redColour}--proteome FILE${endColour}    ${grayColour}FASTA file with the input proteome. Default:${endColour} ${redColour}proteoma.fasta.${endColour}"
     echo -e "  ${redColour}--output DIR${endColour}       ${grayColour}Output directory for results. Default:${endColour} ${redColour}results/.${endColour}"
@@ -270,6 +272,7 @@ combine_predicts(){
 		echo -ne "\t${greenColour}[+]${endColour} The predictions have been successfully completed and combined!.\n"
 	else
 		echo -ne "\t${redColour}[X]${endColour} Something has gone wrong.\n"
+    exit 1 # Cortamos flujo
 
 	fi
 

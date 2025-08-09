@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import re
 import argparse #Para automatizar la entrada
+import sys
 
 # Para que se vea ordenado de menor a mayor
 def ext_numero(acc_num):
@@ -44,7 +45,7 @@ archivo2["Localization"] = archivo2["Localization"].apply(norm_loc)
 
 if archivo1.empty and archivo2.empty:
     print("Ambos archivos están vacíos. No hay datos para combinar.")
-    exit()
+    sys.exit(1)
 elif archivo1.empty:
     print("El archivo de PSORTb está vacío. Usando solo el archivo de Deeploc.")
     combinado = archivo2
