@@ -25,10 +25,11 @@ BIOSOFT: Automates the prediction of subcellular localization and NLS using PSOR
 OPTIONS:
   --site SITE        Location to analyze. Default: Extracellular.
      [*] Extracellular
-     [*] Periplasmic
-     [*] Outer Membrane
+     [*] Periplasmic [Gram-negative only]
+     [*] Outer Membrane [Gram-negative only]
      [*] Cytoplasmic
      [*] Cytoplasmic Membrane
+     [*] Cell wall [Gram-positive only]
 }
   --gram GRAM        Gram group of the organism (negative, positive, archaea). Default: negative.
   --proteome FILE    FASTA file with the input proteome. Default: proteoma.fasta.
