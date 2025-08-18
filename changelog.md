@@ -1,3 +1,12 @@
+***************18/08/2025***************
+- New site flag:
+    Added support for the Cell wall category (Gram-positive only)
+
+- Option added to prevent invalid runs: 
+    When selecting the "Outer Membrane" or "Periplasmic" site for Gram-positive bacteria, the program will now stop execution and display an error message.
+    When selecting the "Cell wall" site for Gram-negative bacteria, the program will now stop execution and display an error message.
+
+- Modified 'bin/combinar.py' introducing a dynamic dictionary that adapts to the Gram type specified by the user. (improves normalization of locations between both tools)
 ***************09/08/2025***************
 - Modified 'bin/combinar.py' to add sys.exit(1) when both input files are empty, preventing the pipeline from continuing.
 - Updated 'main.sh' to stop execution if 'combinar.py' returns an error

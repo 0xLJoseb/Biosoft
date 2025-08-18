@@ -31,10 +31,11 @@ show_help() {
     echo -e "${turquoiseColour}OPTIONS:${endColour}"
     echo -e " ${redColour} --site SITE${endColour}	     ${grayColour}Location to analyze. Default:${endColour} ${redColour}Extracellular.${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Extracellular${endColour}"
-    echo -e "     ${redColour}[*]${endColour} ${grayColour}Periplasmic${endColour}"
-    echo -e "     ${redColour}[*]${endColour} ${grayColour}Outer Membrane (write as 'Outer Membrane')${endColour}"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Periplasmic [Gram-negative only]${endColour}"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Outer Membrane [Gram-negative only] (write as 'Outer Membrane')${endColour}"
     echo -e "     ${redColour}[*]${endColour} ${grayColour}Cytoplasmic${endColour}"
-    echo -e "     ${redColour}[*]${endColour} ${grayColour}Cytoplasmic Membrane (write as 'Cytoplasmic Membrane')${endColour}\n"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Cytoplasmic Membrane (write as 'Cytoplasmic Membrane')${endColour}"
+    echo -e "     ${redColour}[*]${endColour} ${grayColour}Cell wall [Gram-positive only]${endColour}\n"
     
     echo -e "  ${redColour}--gram GRAM${endColour}        ${grayColour}Gram group of the organism (negative, positive, archaea). Default:${endColour} ${redColour}negative.${endColour}"
     echo -e "  ${redColour}--proteome FILE${endColour}    ${grayColour}FASTA file with the input proteome. Default:${endColour} ${redColour}proteoma.fasta.${endColour}"
@@ -108,26 +109,47 @@ mkdir -p "$OUTPUT_DIR"
 run_psortb() {
 	echo -e "${purpleColour}[1/5]${endColour} Ejecutando PSORTb (Gram: $GRAM_GROUP)..."
 
-#Creacion de Localization PSORTb flag
-
-	local locPSORTB_FLAG
-	case "$SITE" in
-		"Extracellular") locPSORTB_FLAG="Extracellular" ;;
-		"Periplasmic") locPSORTB_FLAG="Periplasmic" ;;
-		"Outer Membrane") locPSORTB_FLAG="OuterMembrane" ;;
-    "Cytoplasmic Membrane") locPSORTB_FLAG="CytoplasmicMembrane" ;;
-		"Cytoplasmic") locPSORTB_FLAG="Cytoplasmic" ;;
-		*) echo -ne "${redColour}[X]${endColour} Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
-	esac
-        
-	local PSORTB_FLAG #Ojo: variable PSORTB_FLAG solo accesible dentro de run_psortb()
+  local PSORTB_FLAG #Ojo: variable PSORTB_FLAG solo accesible dentro de run_psortb()
 	case "$GRAM_GROUP" in
 		"negative") PSORTB_FLAG="--negative" ;;
 		"positive") PSORTB_FLAG="--positive" ;;
 		"archaea") PSORTB_FLAG="--archaea" ;;
 		*) echo -ne "${redColour}[X]${endColour} Grupo Gram no valido. \nUsando grupo Gram por defecto.\n"; PSORTB_FLAG="--negative" ;;
 	esac
+  #Creacion de Localization PSORTb flag
+	local locPSORTB_FLAG
+	case "$SITE" in
+		"Extracellular") locPSORTB_FLAG="Extracellular" ;;
+		
+    "Periplasmic") 
+    if [[ "$PSORTB_FLAG" != "--negative" ]]; then
+      echo -ne "${redColour}[X]${endColour} 'Periplasmic' does not apply to Gram-positive bacteria!\n"
+      exit 1
+    fi 
+    locPSORTB_FLAG="Periplasmic" ;;
+		
+    "Outer Membrane") 
+    if [[ "$PSORTB_FLAG" != "--negative" ]] then
+      echo -ne "${redColour}[X]${endColour} 'Outer Membrane' does not apply to Gram-positive bacteria!\n"
+      exit 1
+    fi 
+    locPSORTB_FLAG="OuterMembrane" ;;
 
+
+    "Cytoplasmic Membrane") locPSORTB_FLAG="CytoplasmicMembrane" ;;
+
+    "Cell wall") 
+      if [[ "$PSORTB_FLAG" != "--positive" ]]; then
+        echo -ne "${redColour}[X]${endColour} 'Cell wall' does not apply to Gram-negative bacteria! Use 'Outer Membrane' instead.\n"
+        exit 1
+      fi 
+      locPSORTB_FLAG="Cellwall" ;;
+
+		"Cytoplasmic") locPSORTB_FLAG="Cytoplasmic" ;;
+		*) echo -ne "${redColour}[X]${endColour} Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
+	esac
+        
+	
 	#Se ejecuta psortb
 	./psortb -i "$PROTEOMA_INPUT" -r "$OUTPUT_DIR/psortb_results" "$PSORTB_FLAG" > "$OUTPUT_DIR/logs/psortb.log" 2>&1 # Almacenamiento de errores en un .log
 
@@ -154,29 +176,53 @@ run_psortb() {
 
 run_deeploc(){
 	echo -e "\n${purpleColour}[2/5]${endColour} Ejecutando deeplocpro (Gram: $GRAM_GROUP)..."
+  
+
+  local deeploc_flag
+  case "$GRAM_GROUP" in
+    "negative") deeploc_flag="negative" ;;
+		"positive") deeploc_flag="positive" ;;
+		"archaea") deeploc_flag="archaea" ;;
+		*) echo -ne "${redColour}[X]${endColour}Grupo Gram no valido. \nUsando grupo Gram por defecto.\n"; deeploc_flag="negative" ;;
+	esac
 
 #Creación de localization deeploc_flag 
 	
 	local locdeeploc_flag
 	case "$SITE" in
 		"Extracellular") locdeeploc_flag="Extracellular" ;;
-		"Periplasmic") locdeeploc_flag="Periplasmic" ;;
-		"Outer Membrane") locdeeploc_flag="Outer Membrane|Cell wall & surface" ;; #Incluimos ambas categorias para psort y deeploc
-    "Cytoplasmic Membrane") locdeeploc_flag="Cytoplasmic Membrane" ;;
-		"Cytoplasmic") locdeeploc_flag=",Cytoplasmic,";;
-		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locPSORTB_FLAG="Extracellular" ;;
-	esac
-	
-#Creación de Gram deeploc_flag
-	
-	local deeploc_flag
-	case "$GRAM_GROUP" in
-		"negative") deeploc_flag="negative" ;;
-		"positive") deeploc_flag="positive" ;;
-		"archaea") deeploc_flag="archaea" ;;
-		*) echo -ne "${redColour}[X]${endColour}Grupo Gram no valido. \nUsando grupo Gram por defecto.\n"; deeploc_flag="negative" ;;
-	esac
 
+		"Periplasmic")
+    if [[ "$deeploc_flag" != "negative" ]]; then
+      echo -ne "${redColour}[X]${endColour} 'Periplasmic' does not apply to Gram-positive bacteria!\n"
+      exit 1
+    fi
+
+    locdeeploc_flag="Periplasmic" ;;
+
+    "Outer Membrane")
+    if [[ "$deeploc_flag" != "negative" ]]; then
+      echo -ne "${redColour}[X]${endColour} 'Outer Membrane' does not apply to Gram-positive bacteria!\n"
+      exit 1
+    fi
+    
+    locdeeploc_flag="Outer Membrane|Cell wall & surface" ;; #Incluimos ambas categorias para psort y deeploc (Solo Gram -)
+   
+    "Cytoplasmic Membrane") locdeeploc_flag="Cytoplasmic Membrane" ;;
+
+		"Cytoplasmic") locdeeploc_flag=",Cytoplasmic,";;
+
+    "Cell wall")
+    if [[ "$deeploc_flag" != "positive" ]]; then
+      echo -ne "${redColour}[X]${endColour} 'Cell Wall' only applies to gram-positive bacteria!. Use 'Outer Membrane' instead.\n"
+      exit 1
+    fi
+
+    locdeeploc_flag="Cell wall & surface";;
+    *) echo -ne "${redColour}[X]${endColour}Sitio de localización no valido, o no implementado aun. \nUsando grupo Gram por defecto.\n"; locdeeploc_flag="Extracellular" ;;
+	esac
+	
+ #Creación de Gram deeploc_flag
 	local printlocdeeploc_flag
 	case "$SITE" in
 		"Extracellular") printlocdeeploc_flag="Extracellular" ;;
@@ -184,7 +230,9 @@ run_deeploc(){
 		"Outer Membrane") printlocdeeploc_flag="Outer Membrane" ;;
     "Cytoplasmic Membrane") printlocdeeploc_flag="Cytoplasmic Membrane" ;;
 		"Cytoplasmic") printlocdeeploc_flag="Cytoplasmic" ;;
-		*) printlocdeeploc_flag="Extracellular" ;;
+	  "Cell wall") printlocdeeploc_flag="Cell wall" ;;
+    *) printlocdeeploc_flag="Extracellular" ;;
+
 	esac
 
 
@@ -220,6 +268,7 @@ combine_predicts(){
     		"Outer Membrane") loc_flag="Outer Membrane" ;;
         "Cytoplasmic Membrane") loc_flag="Cytoplasmic Membrane" ;;
         "Cytoplasmic") loc_flag="Cytoplasmic" ;;
+        "Cell wall") loc_flag="Cell wall & surface" ;;
     		*) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
 	esac
 	
@@ -230,7 +279,8 @@ combine_predicts(){
     		"Outer Membrane") score_column=8 ;;
         "Cytoplasmic Membrane") score_column=7;;
         "Cytoplasmic") score_column=6 ;;
-    		*) score_column=5 ;;  # Por defecto --> Extracellular
+        "Cell wall & surface") score_column=4 ;; #Only gram pos
+    		*) score_column=5 ;;  # Default --> Extracellular
 	esac
 
 
@@ -238,8 +288,9 @@ combine_predicts(){
 	echo -ne "\n${purpleColour}[3/5]${endColour} Llevando a cabo el proceso de combinación de predicciones..."
 	mkdir -p "$OUTPUT_DIR/Comb"
 	echo -ne "\n${yellowColour}[!]${endColour} Realizando tratamientos sobre los datos obtenidos...\n"
-	
-	sed -i 's/ /,/g' "$OUTPUT_DIR/psortb_results/output.txt" | xargs awk -F',' '{ $NF = $NF / 10; print $0 }' OFS=',' "$OUTPUT_DIR/psortb_results/output.txt" > ""$OUTPUT_DIR"/Comb/output_arreglado.csv"
+  
+  #Psortb filtering	
+	sed -i 's/ /,/g' "$OUTPUT_DIR/psortb_results/output.txt" | xargs awk -F',' '{ $NF = $NF / 10; print $0 }' OFS=',' "$OUTPUT_DIR/psortb_results/output.txt" > "$OUTPUT_DIR/Comb/output_arreglado.csv"
 	if [[ $? -eq 0 ]]; then
 		echo -ne "\t${greenColour}[+]${endColour} PSORTb results created.\n"
 	else
@@ -253,8 +304,8 @@ combine_predicts(){
     if ($3 == "Outer Membrane") print $2 "," $3 "," $8;
     else if ($3 == "Cell wall & surface") print $2 "," $3 "," $4;
   }' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_arreglado.csv"
-  else
-  awk -F',' -v col="$score_column" 'NR>1 {print $2 "," $3 "," $col}' ""$OUTPUT_DIR"/deeploc_results/records.txt" > ""$OUTPUT_DIR"/Comb/records_arreglado.csv"
+  else #Other locations
+  awk -F',' -v col="$score_column" 'NR>1 {print $2 "," $3 "," $col}' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_arreglado.csv"
   fi
 
 	if [[ $? -eq 0 ]]; then
@@ -266,7 +317,7 @@ combine_predicts(){
 
 #  ======= combinar.py =======
 
-	python3 bin/combinar.py --psortb "$OUTPUT_DIR/Comb/output_arreglado.csv" --deeploc "$OUTPUT_DIR/Comb/records_arreglado.csv" --output "$OUTPUT_DIR/Comb/archivo_combinado.csv"
+	python3 bin/combinar.py --psortb "$OUTPUT_DIR/Comb/output_arreglado.csv" --deeploc "$OUTPUT_DIR/Comb/records_arreglado.csv" --output "$OUTPUT_DIR/Comb/archivo_combinado.csv" --gram "$GRAM_GROUP"
 	
 	if [[ $? -eq 0 ]]; then
 		echo -ne "\t${greenColour}[+]${endColour} The predictions have been successfully completed and combined!.\n"
@@ -281,7 +332,7 @@ combine_predicts(){
 #Se crea un FASTA con las secuencias en AA's para todo lo predicho
 
 	mkdir -p "$OUTPUT_DIR/NLSPredicts"
-	echo -ne "\n${purpleColour}[4/5]${endColour} Generando un archivo .fasta con las proteinas predichas con localizacion \"$loc_flag\""" por PSORTb & Deeplocpro¸\n"
+	echo -ne "\n${purpleColour}[4/5]${endColour} Generando un archivo .fasta con las proteinas predichas con localizacion '$SITE' por PSORTb & Deeplocpro.\n"
 	python3 bin/extraer.py --score "$OUTPUT_DIR/Comb/archivo_combinado.csv" --fasta "$PROTEOMA_INPUT" --output "$OUTPUT_DIR/NLSPredicts/Predicted_proteins.fasta"
 	
 	if [[ $? -eq 0 ]]; then
@@ -303,12 +354,13 @@ run_nlstradamus(){
     "Outer Membrane") loc_flag="Outer Membrane" ;;
     "Cytoplasmic Membrane") loc_flag="Cytoplasmic Membrane" ;;
     "Cytoplasmic") loc_flag="Cytoplasmic" ;;
+    "Cell wall") loc_flag="Cell wall" ;;
     *) echo -ne "${redColour}[X]${endColour}Sitio de localización no válido, o no implementado aún. \nUsando grupo Gram por defecto.\n"; loc_flag="Extracellular" ;;
   esac
 
 	
 
-	echo -ne "\n${purpleColour}[5/5]${endColour} Realizando el análisis de NLS sobre el proteoma generado!\n"
+	echo -ne "\n${purpleColour}[5/5]${endColour} Performing NLS analysis on the generated proteome!\n"
 	echo -ne "Default parameters: -t 0.7 (threshold for true NLS) and -m 2 (four-state bipartite model for complex NLS detection).\n"
 	perl NLStradamus/nlstradamus.pl -i "$OUTPUT_DIR/NLSPredicts/Predicted_proteins.fasta" -t 0.7 -m 2 -cpu $THREADS -tab | sed 's/\t/,/g' > "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv"
 	
@@ -322,7 +374,7 @@ run_nlstradamus(){
 
 	local VALOR_EXT
 	VALOR_EXT=$(tail -n +2 "$OUTPUT_DIR/NLSPredicts/resultsNLS.csv" | wc -l)
-	echo -e "${yellowColour}[!]${endColour} Se han encontrado $VALOR_EXT proteinas de localizacion \"$loc_flag\" con NLS."; sleep 3
+	echo -e "${yellowColour}[!]${endColour} $VALOR_EXT proteins with '$SITE' con NLS."; sleep 3
 
 
 	#-t 0.7: Sets a threshold of 0.7 to consider sites as true NLS.

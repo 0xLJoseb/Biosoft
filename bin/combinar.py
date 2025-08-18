@@ -11,21 +11,33 @@ def ext_numero(acc_num):
     
     return int(numeros[-1]) if numeros else float('inf') # Si no hay mas numeros retorna infinito
 
-# Función para normalizar nombre de localizacion [Outer Membrane]
-def norm_loc(localization):
-    replacements = {
-        "OuterMembrane": "Outer Membrane",
-        "Cell wall & surface": "Outer Membrane",
-        "CytoplasmicMembrane": "Cytoplasmic Membrane"
+def build_replacements(gram: str): #Diccionario cuya estructura va a cambiar segun el gram
+    base = {
+        "OuterMembrane" : "Outer Membrane",
+        "CytoplasmicMembrane" : "Cytoplasmic Membrane",
     }
-    return replacements.get(localization, localization) #Convertimos cada palabra en su respectivo reemplazo
+    if gram == "positive": #Unificamos psort y deeploc para cell wall en gram pos
+        base.update({
+            "Cellwall" : "Cell wall",
+            "Cell wall & surface" : "Cell wall",
+        })
+    elif gram == "negative":
+        base.update({
+            "Cell wall & surface" : "Outer Membrane",
+        })
+    else:
+        pass #solo base 
+    return base 
 
+def norm_loc(localization: str, replacements: dict):
+    return replacements.get(localization, localization) #Convertimos cada palabra en su respectivo reemplazo
 # Configurando agumentos de entrada
 
 parser = argparse.ArgumentParser(description='Combina resultados de PSORTb y Deeplocpro')
 parser.add_argument('--psortb', required=True, help='Ruta al archivo CSV de PSORTb')
 parser.add_argument('--deeploc', required=True, help='Ruta al archivo CSV de Deeplocpro')
 parser.add_argument('--output', required=True, help='Ruta de salida para el archivo CSV combinado')
+parser.add_argument('--gram', required=True, choices=['positive', 'negative', 'archaea'], help='Gram escogido para la ejecucion del analisis')
 args = parser.parse_args()
 
 ruta_arc1 = args.psortb
@@ -36,9 +48,9 @@ archivo1 = pd.read_csv(ruta_arc1, header=None, names=["Accession number", "Local
 archivo2 = pd.read_csv(ruta_arc2, header=None, names=["Accession number", "Localization", "Score"])
 
 # Normalizacion loc. 
-
-archivo1["Localization"] = archivo1["Localization"].apply(norm_loc)
-archivo2["Localization"] = archivo2["Localization"].apply(norm_loc)
+replacements = build_replacements(args.gram)
+archivo1["Localization"] = archivo1["Localization"].apply(lambda x: norm_loc(str(x), replacements))
+archivo2["Localization"] = archivo2["Localization"].apply(lambda x: norm_loc(str(x), replacements))
 
 
 # Verif Vacios & Concatenar
