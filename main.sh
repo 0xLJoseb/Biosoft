@@ -298,15 +298,19 @@ combine_predicts(){
 
 	fi
 
-  # *************** Deeplocpro: Tratamiento especial para "Outer Membrane" y "Cell wall & surface" **************
+  # *************** DeepLocPro: Tratamiento especial para "Outer Membrane" y "Cell wall & surface" **************
+  
   if [[ "$loc_flag" == "Outer Membrane" ]]; then
     awk -F',' 'NR>1 {
     if ($3 == "Outer Membrane") print $2 "," $3 "," $8;
     else if ($3 == "Cell wall & surface") print $2 "," $3 "," $4;
-  }' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_arreglado.csv"
+  }' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_tmp.csv"
   else #Other locations
-  awk -F',' -v col="$score_column" 'NR>1 {print $2 "," $3 "," $col}' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_arreglado.csv"
+  awk -F',' -v col="$score_column" 'NR>1 {print $2 "," $3 "," $col}' "$OUTPUT_DIR/deeploc_results/records.txt" > "$OUTPUT_DIR/Comb/records_tmp.csv"
   fi
+
+  # *************** Filtrando por scores mayores a 0.5 de DeepLocPro ***************
+  awk -F',' '$3 > 0.5 {print}' "$OUTPUT_DIR/Comb/records_tmp.csv" > "$OUTPUT_DIR/Comb/records_arreglado.csv"
 
 	if [[ $? -eq 0 ]]; then
 		echo -ne "\t${greenColour}[+]${endColour} Deeploc results created.\n"
